@@ -7,6 +7,11 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  annotations:
+    # This is needed in order to get DNS names published so the cluster
+    # can assemble itself. See this issue for an alternate option in the
+    # future: https://github.com/kubernetes/kubernetes/issues/49239
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
   clusterIP: None
   ports:
