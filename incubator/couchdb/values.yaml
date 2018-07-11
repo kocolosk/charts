@@ -1,6 +1,26 @@
 ## clusterSize is the initial size of the CouchDB cluster.
 clusterSize: 3
 
+## This config section enables the use of a separate tier of CouchDB nodes
+## devoted exclusively to serving API requests. This tier is modeled as a
+## ReplicaSet and can be horizontally scaled up and down. The cluster nodes in
+## this tier do communicate with each backend storage node directly using
+## distributed Erlang. They replicate a handful of local system databases from
+## that tier but do not need durable storage for the data.
+api:
+  enabled: true
+  replicas: 2
+  erlangFlags:
+    # The POD_IP hack is important for distributed Erlang to boot up. The
+    # StatefulSet members do not require this because they each receive stable
+    # DNS names and FQDNs. We are not concerned about the stability of Pod IPs
+    # here because the API tier is effectively stateless, but we do need *some*
+    # network identity for distributed Erlang. The "apionly" prefix is
+    # arbitary and can be changed as desired
+    name: apionly@$(POD_IP)
+    # This must match erlangFlags.setcookie
+    setcookie: monster
+
 ## If allowAdminParty is enabled the cluster will start up without any database
 ## administrator account; i.e., all users will be granted administrative
 ## access. Otherwise, the system will look for a Secret called
@@ -46,7 +66,7 @@ image:
 ## Sidecar that connects the individual Pods into a cluster
 helperImage:
   repository: kocolosk/couchdb-statefulset-assembler
-  tag: 1.1.0
+  tag: 1.2.0
   pullPolicy: IfNotPresent
 
 ## CouchDB is happy to spin up cluster nodes in parallel, but if you encounter

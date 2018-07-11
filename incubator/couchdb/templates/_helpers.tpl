@@ -25,6 +25,14 @@ ensure that the latter gets a unique name.
 {{- end -}}
 
 {{/*
+The API tier is a separate ReplicaSet
+*/}}
+{{- define "couchdb.apinodes" -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- printf "%s-api-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 Create a random string if the supplied key does not exist
 */}}
 {{- define "couchdb.defaultsecret" -}}
